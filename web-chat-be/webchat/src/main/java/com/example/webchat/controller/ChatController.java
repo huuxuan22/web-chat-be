@@ -1,0 +1,150 @@
+package com.example.webchat.controller;
+
+import com.example.webchat.dto.CreateChatDTO;
+import com.example.webchat.dto.CreateGroupDTO;
+import com.example.webchat.model.Chat;
+import com.example.webchat.model.Users;
+import com.example.webchat.request.GroupChatReques;
+import com.example.webchat.respone.errors.CreateGroupErrors;
+import com.example.webchat.service.impl.IChatService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/chat")
+public class ChatController {
+    @Autowired
+    private IChatService chatService;
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @PostMapping("/single")
+    public ResponseEntity<?> createChatHandler(@AuthenticationPrincipal Users user,
+                                               @Valid @RequestBody CreateChatDTO createChatDTO
+                                               , BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult);
+        }
+        chatService.createChat(user, createChatDTO.getUserId());
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("/group")
+    public ResponseEntity<?> createGroupHandler(@AuthenticationPrincipal Users users,
+                                                @Valid @RequestBody CreateGroupDTO createGroupDTO,
+                                                BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            CreateGroupErrors createGroupErrors = new CreateGroupErrors();
+            bindingResult.getFieldErrors().stream()
+                    .forEach(fieldError -> {
+                        String field = fieldError.getField();
+                        String message = fieldError.getDefaultMessage();
+                        switch (field) {
+                            case "userIds":
+                                createGroupErrors.setUserIds(
+                                        createGroupDTO.getUserIds() == null ? message :
+                                                createGroupDTO.getUserIds() + "; " + message
+                                );
+                                break;
+                            case "groupName":
+                                createGroupDTO.setGroupName(
+                                        createGroupDTO.getGroupName() == null ? message :
+                                                createGroupDTO.getGroupName() + "; " + message
+                                );
+                                break;
+                            case "chatImage":
+                                createGroupErrors.setChatImage(
+                                        createGroupDTO.getChatImage() == null ? message :
+                                                createGroupDTO.getChatImage() + "; " + message
+                                );
+                                break;
+
+                        }
+                    });
+            return ResponseEntity.badRequest().body(createGroupErrors);
+        }
+        chatService.createGroupChat(modelMapper.map(createGroupDTO, GroupChatReques.class),users);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{chatId}")
+    public ResponseEntity<?> findChatByIdHandler(@AuthenticationPrincipal Users users,
+                                                 @PathVariable("chatId") String chatId) {
+        chatService.findById(Integer.valueOf(chatId));
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * lay danh sach nguoi dung
+     * @param users
+     * @return
+     */
+    @GetMapping("/user")
+    public ResponseEntity<?> getChatListByUserId(@AuthenticationPrincipal Users users) {
+        List<Chat> chatList = chatService.findAllChatByUserId(users.getUserId());
+        return ResponseEntity.ok().body(chatList);
+    }
+
+    /**
+     * them nguoi dung vao trong group
+     * @param users
+     * @param chatId
+     * @param userId
+     * @return
+     */
+    @PutMapping("/{chatId}/add/{userId}")
+    public ResponseEntity<?> addUserToGroup(@AuthenticationPrincipal Users users,
+                                                @PathVariable("chatId") Integer chatId,
+                                                @PathVariable("userId") Integer userId) {
+        if (chatId == null || userId == null) {
+            return ResponseEntity.badRequest().body("người dùng hoặc nhóm chat không hợp lệ ");
+        }
+        chatService.addUserToGroupChat(userId,chatId,users);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * xoa 1 nguoi dung ra khoi nhom
+     * @param users
+     * @param chatId
+     * @param userId
+     * @return
+     */
+    @DeleteMapping("/{chatId}/remove/{userId}")
+    public ResponseEntity<?> removeUserFromGroup(@AuthenticationPrincipal Users users,
+                                                 @PathVariable("chatId") Integer chatId,
+                                                 @PathVariable("userId") Integer userId) {
+        if (chatId == null || userId == null) {
+            return ResponseEntity.badRequest().body("người dùng hoặc nhóm chat không hợp lệ ");
+        }
+        chatService.removeUserFromGroupChat(userId,chatId,users);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * xoa luon nhom chat
+     * @param users
+     * @param chatId
+     * @return
+     */
+    @DeleteMapping("/delete/{chatId}")
+    public ResponseEntity<?> removeChat(@AuthenticationPrincipal Users users,
+                                        @PathVariable("chatId") Integer chatId) {
+        if (chatId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("nhóm chat không hợp lệ");
+        }
+        chatService.deleteChat(chatId,users);
+        return ResponseEntity.ok().build();
+    }
+}
