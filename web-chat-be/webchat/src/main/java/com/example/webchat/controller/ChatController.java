@@ -81,8 +81,8 @@ public class ChatController {
     @GetMapping("/{chatId}")
     public ResponseEntity<?> findChatByIdHandler(@AuthenticationPrincipal Users users,
                                                  @PathVariable("chatId") String chatId) {
-        chatService.findById(Integer.valueOf(chatId));
-        return ResponseEntity.ok().build();
+        Chat chat=   chatService.findById(Integer.valueOf(chatId));
+        return ResponseEntity.ok().body(chat.getUsers());
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.example.webchat.controller;
 
+import com.example.webchat.component.JwtTokenUtils;
 import com.example.webchat.dto.UserDTO;
 import com.example.webchat.model.Users;
 import com.example.webchat.respone.errors.UserErrorsDTO;
@@ -9,7 +10,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,17 +27,27 @@ public class UserController {
     private IUserService userService;
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtTokenUtils tokenUtils;
     @GetMapping("infor")
     public ResponseEntity<?> getInfor(@AuthenticationPrincipal Users users) {
         return ResponseEntity.ok(users);
     }
 
-    @PostMapping("get-list-user")
-    public ResponseEntity<?> getListUser(@AuthenticationPrincipal Users users) {
-        if (users == null) {
+    @GetMapping("search")
+    public ResponseEntity<?> getListUser(@AuthenticationPrincipal Users users,
+                                         @RequestParam("name") String name) {
+        if (users == null || name == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không có thông tin người dùng");
         }
-        List<Users> usersList = userService.searchUsers(users.getUsername());
+        List<Users> usersList = userService.searchUsers(name);
         return ResponseEntity.ok(usersList);
     }
 
@@ -105,6 +120,11 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(userErrorsDTO);
         }
         userService.createUser(userDTO);
-        return ResponseEntity.ok().build();
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userDTO.getUsername(),userDTO.getPassword())
+        );
+        Users user = (Users) authentication.getPrincipal();
+        String jwt = tokenUtils.generateToken(user);
+        return ResponseEntity.ok(jwt);
     }
 }

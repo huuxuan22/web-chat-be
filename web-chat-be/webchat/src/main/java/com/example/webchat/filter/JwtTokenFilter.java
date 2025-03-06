@@ -36,7 +36,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            if (isByPassToken(request)) {
+                if (isByPassToken(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }

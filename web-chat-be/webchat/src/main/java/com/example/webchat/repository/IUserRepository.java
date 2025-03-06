@@ -22,4 +22,7 @@ public interface IUserRepository extends JpaRepository<Users, Integer> {
 
     @Query("select u from Users  u where u.fullName = :fullname")
     Optional<Users> findByFullname(@Param("fullname") String fullname);
+
+    @Query("select u from Users  u where u.fullName = concat('%',:fulName, '%' ) ")
+    List<Users> searchByFullname(@Param("fullname") String fullname);
 }

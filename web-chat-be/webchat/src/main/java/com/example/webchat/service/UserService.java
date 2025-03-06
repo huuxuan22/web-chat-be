@@ -33,7 +33,7 @@ public class UserService implements IUserService {
 
     @Override
     public List<Users> searchUsers(String value) {
-        return null;
+        return userRepository.searchByFullname(value);
     }
 
     @Override
