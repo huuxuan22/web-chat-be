@@ -63,13 +63,6 @@ public class ChatController {
                                                 createGroupDTO.getGroupName() + "; " + message
                                 );
                                 break;
-                            case "chatImage":
-                                createGroupErrors.setChatImage(
-                                        createGroupDTO.getChatImage() == null ? message :
-                                                createGroupDTO.getChatImage() + "; " + message
-                                );
-                                break;
-
                         }
                     });
             return ResponseEntity.badRequest().body(createGroupErrors);
@@ -81,7 +74,7 @@ public class ChatController {
     @GetMapping("/{chatId}")
     public ResponseEntity<?> findChatByIdHandler(@AuthenticationPrincipal Users users,
                                                  @PathVariable("chatId") String chatId) {
-        Chat chat=   chatService.findById(Integer.valueOf(chatId));
+        Chat chat=chatService.findById(Integer.valueOf(chatId));
         return ResponseEntity.ok().body(chat.getUsers());
     }
 
@@ -147,4 +140,33 @@ public class ChatController {
         chatService.deleteChat(chatId,users);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * lấy tất cả các đoạn tin nhắn ddax ket ban
+     * @param users
+     * @return
+     */
+    @GetMapping("/get-all")
+    public ResponseEntity<?> getAllChatByUserId(@AuthenticationPrincipal Users users,
+                                                @RequestParam("name") String name) {
+        if (users == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("người dùng không tồn tại");
+        }
+        if (name == null || name.isEmpty()) {
+            name = "";
+        }
+        return ResponseEntity.ok().body(chatService.getAllChatMessages(users.getUserId(),name));
+    }
+
+    @GetMapping("/find-chat")
+    public ResponseEntity<?> getChatByDoubleUserId(@AuthenticationPrincipal Users users,
+                                                     @RequestParam("userId1") Integer userId1,
+                                                   @RequestParam("userId2") Integer userId2) {
+        if (users == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("người dùng không tồn tại");
+        }
+
+        return ResponseEntity.ok().body(chatService.findByDoubleUserId(userId1,userId2));
+    }
+
 }

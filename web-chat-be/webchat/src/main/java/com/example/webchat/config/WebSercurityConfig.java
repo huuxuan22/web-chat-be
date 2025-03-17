@@ -41,8 +41,7 @@ public class WebSercurityConfig {
                 .authorizeHttpRequests((request)   -> {
 
                     request.requestMatchers(
-                                    "**")
-
+                                    "/**","/ws/**")
                             .permitAll()
                             // phaan quyen cho user
 
@@ -60,12 +59,14 @@ public class WebSercurityConfig {
             @Override
             public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {
                 CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOrigins(List.of("*")); // cho phép tất cả domain gửi yêu cầu
+                configuration.setAllowCredentials(true);
+                configuration.setAllowedOrigins(List.of("http://localhost:3000")); // cho phép tất cả domain gửi yêu cầu
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
                 // cho phép cái http nhất định đi qua
                 configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
                 configuration.setExposedHeaders(List.of("x-auth-token")); // liệt kê các header mà front end có thể truycaapjpj từ phản hồi
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
                 // tạo 1 nguồn cấu hình CORS dựa trên URl
                 source.registerCorsConfiguration("/**", configuration);// dùng đ cấu hình CORS cho tất cả đường dẫn
                 httpSecurityCorsConfigurer.configurationSource(source); // áp dụng cấu hình để bỏ vào httpSecurityCorsConfigurer

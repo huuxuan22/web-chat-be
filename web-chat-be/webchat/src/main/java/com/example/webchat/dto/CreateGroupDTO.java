@@ -22,5 +22,4 @@ public class CreateGroupDTO {
     @Size(min = 3, max = 50, message = "Tên nhóm phải có từ 3 đến 50 ký tự")
     private String groupName;
 
-    private String chatImage;
 }

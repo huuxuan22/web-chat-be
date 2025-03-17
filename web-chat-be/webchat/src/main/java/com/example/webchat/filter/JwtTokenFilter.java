@@ -35,8 +35,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        try {
-                if (isByPassToken(request)) {
+        try {            if (isByPassToken(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -79,8 +78,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         final List<org.modelmapper.internal.Pair<String, String >> bypassTokens = Arrays.asList(
                 org.modelmapper.internal.Pair.of("/api/user/register","POST"),
-                org.modelmapper.internal.Pair.of("/api/login","POST")
-
+                org.modelmapper.internal.Pair.of("/api/login","POST"),
+                org.modelmapper.internal.Pair.of("/ws","GET"),
+                org.modelmapper.internal.Pair.of("/ws/","GET"),
+                org.modelmapper.internal.Pair.of("/ws/**","GET")
         );
 
         for (Pair<String, String > token : bypassTokens) {

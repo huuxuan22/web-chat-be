@@ -5,11 +5,15 @@ import com.example.webchat.exception.DataNotFoundException;
 import com.example.webchat.model.Roles;
 import com.example.webchat.model.Users;
 import com.example.webchat.repository.IUserRepository;
+import com.example.webchat.request.ListMessageRequest;
+import com.example.webchat.respone.UserAddFiend;
 import com.example.webchat.service.impl.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,4 +51,33 @@ public class UserService implements IUserService {
                 .build();
         return userRepository.save(users);
     }
+
+    /**
+     *
+     * @param value
+     * @return
+     */
+    @Override
+    public List<UserAddFiend> searchUserAddFiends(String value,Integer userLogin) {
+        List<Object[]> results = userRepository.searchUsersByFullname(value,userLogin);
+        List<UserAddFiend> users = new ArrayList<>();
+
+        for (Object[] row : results) {
+            users.add(new UserAddFiend(
+                    ((Number) row[0]).longValue(),  // Chuyển thành Long
+                    (String) row[1],
+                    (String) row[2],
+                    (String) row[3],
+                    ((Number) row[4]).longValue()   // Chuyển thành Long
+            ));
+        }
+        return users;
+    }
+
+    @Override
+    public Users findUserById(Integer id) {
+        return userRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
+    }
+
+
 }

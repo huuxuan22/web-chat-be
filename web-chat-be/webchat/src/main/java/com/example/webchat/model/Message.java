@@ -3,6 +3,7 @@ package com.example.webchat.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Setter
@@ -19,7 +20,7 @@ public class Message {
     private Integer messageId;
 
     private String content;
-    private LocalDateTime timestamp;
+    private Timestamp timestamp;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private Users users;

@@ -16,5 +16,4 @@ import java.util.List;
 public class CreateGroupErrors {
     private String userIds;
     private String groupName;
-    private String chatImage;
 }

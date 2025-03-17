@@ -47,7 +47,7 @@ public class UserController {
         if (users == null || name == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không có thông tin người dùng");
         }
-        List<Users> usersList = userService.searchUsers(name);
+        List<Users> usersList = userService.searchUsers(name.trim());
         return ResponseEntity.ok(usersList);
     }
 
@@ -127,4 +127,22 @@ public class UserController {
         String jwt = tokenUtils.generateToken(user);
         return ResponseEntity.ok(jwt);
     }
+
+    /**
+     * tìm kiếm người dung để kết bạn
+     * @param users
+     * @return
+     */
+    @GetMapping("/search-user")
+    public ResponseEntity<?> searchUserForAddFriend(@AuthenticationPrincipal Users users,
+                                                    @RequestParam("name") String name) {
+        if (users == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("người dùng không tồn tại");
+        }
+        if (name == null || name.isEmpty()) {
+            name = "";
+        }
+        return ResponseEntity.ok().body(userService.searchUserAddFiends(name.trim(), users.getUserId()));
+    }
+
 }

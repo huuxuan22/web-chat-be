@@ -27,7 +27,7 @@ public class Chat {
     private String chatImage;
 
     @Column(name = "is_group")
-    private Boolean isGroup;
+    private Integer isGroup;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

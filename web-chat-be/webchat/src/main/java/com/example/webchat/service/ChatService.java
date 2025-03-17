@@ -5,12 +5,16 @@ import com.example.webchat.model.Chat;
 import com.example.webchat.model.Users;
 import com.example.webchat.repository.IChatRepository;
 import com.example.webchat.repository.IUserRepository;
+import com.example.webchat.request.ChatMessageRequest;
 import com.example.webchat.request.GroupChatReques;
 import com.example.webchat.service.impl.IChatService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,6 +26,9 @@ public class ChatService implements IChatService {
     @Autowired
     private IUserRepository userRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
 
     /**
      * tạo ra 1 nhóm chat 1 là kết bạn
@@ -29,7 +36,7 @@ public class ChatService implements IChatService {
      * => là 1 nhóm thì trả về true
      * => user ở bên trong chinh là thông tin người dùng
      * @param userCreate
-     * @param fullName
+     * @param
      * @return
      */
     @Override
@@ -40,7 +47,7 @@ public class ChatService implements IChatService {
         Chat chat = new Chat();
         chat.getUsers().add(users);
         chat.getUsers().add(userCreate);
-        chat.setIsGroup(false);
+        chat.setIsGroup(0);
         return chatRepository.save(chat);
     }
 
@@ -52,7 +59,7 @@ public class ChatService implements IChatService {
 
     @Override
     public List<Chat> findAllChatByUserId(Integer userId) {
-        return chatRepository.findAllById(Collections.singleton(userId));
+        return null;
     }
 
     /**
@@ -65,7 +72,7 @@ public class ChatService implements IChatService {
     @Transactional
     public Chat createGroupChat(GroupChatReques red, Users reqUser) {
         Chat group = new Chat();
-        group.setIsGroup(true);
+        group.setIsGroup(1);
         group.setChatImage(red.getChatImage());
         group.setChatName(red.getChatName());
         group.setCreatedBy(reqUser);
@@ -132,4 +139,30 @@ public class ChatService implements IChatService {
            chatRepository.delete(chat);
         }
     }
+
+    @Override
+    public List<ChatMessageRequest> getAllChatMessages(Integer userId,String name) {
+        List<ChatMessageRequest> chatMessageRequests = new ArrayList<>();
+        List<Object[]> results = chatRepository.findRecentChatsNative(userId,name);
+        for (Object[] row : results) {
+            ChatMessageRequest dto = new ChatMessageRequest();
+            dto.setChatId((Integer) row[0]);  // Cột 1: chat_id
+            dto.setChatName((String) row[1]); // Cột 2: chat_name
+            dto.setIsGroup((Integer) row[2]);   // Cột 3: is_group
+            dto.setMessageId((Integer) row[3]);  // Cột 4: message_id
+            dto.setLastMessage((String) row[4]); // Cột 5: last_message
+            dto.setLastMessageTime(((Timestamp) row[5]).toLocalDateTime()); // Cột 6: last_message_time
+            dto.setSenderId((Integer) row[6]);  // Cột 7: sender_id
+            dto.setSenderName((String) row[7]); // Cột 8: sender_name
+            chatMessageRequests.add(dto);
+        }
+        return chatMessageRequests;
+    }
+
+    @Override
+    public Chat findByDoubleUserId(Integer userId1, Integer userId2) {
+        return chatRepository.findByDoubleUserId(userId1,userId2);
+    }
+
+
 }

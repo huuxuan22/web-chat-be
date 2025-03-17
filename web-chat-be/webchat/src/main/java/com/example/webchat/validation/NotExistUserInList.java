@@ -6,7 +6,7 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = NotExistUsernameValidator.class)
+@Constraint(validatedBy = NotExistUserInListValidator.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NotExistUserInList {

@@ -3,6 +3,7 @@ package com.example.webchat.controller;
 import com.example.webchat.dto.SendMessDTO;
 import com.example.webchat.model.Message;
 import com.example.webchat.model.Users;
+import com.example.webchat.request.ListMessageRequest;
 import com.example.webchat.respone.errors.SendMessErrors;
 import com.example.webchat.service.impl.IChatService;
 import com.example.webchat.service.impl.IMessageService;
@@ -17,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @RestController
@@ -67,13 +69,14 @@ public class MessageController {
     }
 
 
-    @GetMapping("/chat/{chatId}")
+    @GetMapping("/chat")
     public ResponseEntity<?> getChat(@AuthenticationPrincipal Users users,
-                                     @PathVariable("chatId") Integer chatId) {
+                                     @RequestParam("chatId") Integer chatId,
+                                     @RequestParam("timestamp") String timestamp) {
         if (chatId == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("đoạn chat này không tồn tại ");
         }
-        List<Message> messages = messageService.getChatMessages(chatId);
+        List<ListMessageRequest> messages = messageService.getListMessageRequests(chatId, (timestamp));
         return ResponseEntity.status(HttpStatus.OK).body(messages);
     }
 
