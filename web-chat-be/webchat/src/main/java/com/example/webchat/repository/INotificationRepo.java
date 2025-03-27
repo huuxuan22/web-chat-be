@@ -22,7 +22,8 @@ public interface INotificationRepo extends JpaRepository<Notification, Long> {
                             @Param("senderId") Integer senderId,
                             @Param("receiverId") Integer receiverId);
 
-    @Query(value = "select n.* from notifications as n where n.receiver_id = :receiverId order by n.notification_id desc ",nativeQuery = true)
+    @Query(value = "select n.* from " +
+            " notifications as n where n.receiver_id = :receiverId or (n.sender_id = :receiverId and n.is_read = 1) order by n.notification_id desc ",nativeQuery = true)
     List<Notification> findAllByReceiverId(@Param("receiverId") Integer receiverId);
     @Modifying
     @Transactional
@@ -31,4 +32,15 @@ public interface INotificationRepo extends JpaRepository<Notification, Long> {
             "            or (n.sender_id = :receiverId and n.receiver_id = :senderId))\n" +
             "            and n.is_read = 0",nativeQuery = true)
     void deleteNotificationBySenderAndReceiver(@Param("senderId") Integer senderId,@Param("receiverId") Integer receiverId);
+    @Modifying
+    @Transactional
+    @Query(value = "update notifications as n set is_read = 1 where " +
+            "n.sender_id = :senderId " +
+            "and n.receiver_id = :receiverId and n.is_read = 0",nativeQuery = true)
+    void notificationAccept(@Param("senderId") Integer senderId,@Param("receiverId") Integer receiverId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "delete from notifications as n where n.is_read = 1",nativeQuery = true)
+    void deleteByIsread();
 }

@@ -1,6 +1,7 @@
 package com.example.webchat.dto;
 
 import com.example.webchat.validation.NotExistUserInList;
+import com.example.webchat.validation.chat_validation.ExistChatName;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,6 +21,7 @@ public class CreateGroupDTO {
 
     @NotNull(message = "Tên nhóm không được để trống")
     @Size(min = 3, max = 50, message = "Tên nhóm phải có từ 3 đến 50 ký tự")
+    @ExistChatName
     private String groupName;
 
 }

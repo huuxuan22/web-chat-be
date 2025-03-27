@@ -7,11 +7,14 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/notification")
@@ -27,7 +30,6 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.OK).body(notificationService.findAllByReceiverId(users.getUserId()));
     }
 
-
     @GetMapping("/delete-notify")
     public ResponseEntity<?> deleteNotification(
                                                 @RequestParam Integer senderId,
@@ -35,5 +37,14 @@ public class NotificationController {
 
         notificationService.deleteNotification(senderId, receiverId);
         return ResponseEntity.status(HttpStatus.OK).body("OK`");
+    }
+    @DeleteMapping("clean")
+    public ResponseEntity<?> cleanNotification(@AuthenticationPrincipal Users users,
+                                               @RequestParam Integer notificationIds) {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.schedule(() -> {
+                notificationService.deleteUnreadNotifications(notificationIds);
+            },1, TimeUnit.MINUTES);
+            return ResponseEntity.status(HttpStatus.OK).body("OK`");
     }
 }

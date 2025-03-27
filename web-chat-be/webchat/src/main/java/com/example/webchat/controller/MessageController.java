@@ -3,6 +3,7 @@ package com.example.webchat.controller;
 import com.example.webchat.dto.SendMessDTO;
 import com.example.webchat.model.Message;
 import com.example.webchat.model.Users;
+import com.example.webchat.repository.MessageProjection;
 import com.example.webchat.request.ListMessageRequest;
 import com.example.webchat.respone.errors.SendMessErrors;
 import com.example.webchat.service.impl.IChatService;
@@ -12,6 +13,10 @@ import jakarta.validation.Valid;
 import lombok.Getter;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -72,12 +77,14 @@ public class MessageController {
     @GetMapping("/chat")
     public ResponseEntity<?> getChat(@AuthenticationPrincipal Users users,
                                      @RequestParam("chatId") Integer chatId,
-                                     @RequestParam("timestamp") String timestamp) {
+                                     @RequestParam(defaultValue = "0") Integer page,
+                                     @RequestParam(defaultValue = "15") Integer size) {
         if (chatId == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("đoạn chat này không tồn tại ");
         }
-        List<ListMessageRequest> messages = messageService.getListMessageRequests(chatId, (timestamp));
-        return ResponseEntity.status(HttpStatus.OK).body(messages);
+        Pageable pageable = PageRequest.of(page, size,Sort.by("timestamp").descending());
+        Page<MessageProjection> messages = messageService.getChatMessages(chatId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(messages.getContent());
     }
 
     @GetMapping("/{messageId}")
@@ -87,7 +94,7 @@ public class MessageController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("tin nhắn này không đúng định dạng");
         }
         Message message = messageService.findMessageById(messageId);
-        return ResponseEntity.status(HttpStatus.OK).body(message);
+        return ResponseEntity.status(HttpStatus.OK).body(message.getContent());
     }
 
     @DeleteMapping("/{messageId}")

@@ -87,4 +87,15 @@ public class WebsocketControllers {
         logger.info("📩 Message: {}", send.getMessage());
         return send;
     }
+
+    @MessageMapping("/accept-notification-add")
+    @SendTo("/topic/messages")
+    public Invation acceptAddFriend(@Payload Invation send) {
+        chatService.acceptAddFriend(Integer.valueOf(send.getUserSend()),
+                Integer.valueOf(send.getUserReceive()));
+        logger.info("📩 Nguoi nhan: {} ", send.getUserReceive());
+        logger.info("📩 Nguoi gui: {}", send.getUserSend());
+        logger.info("📩 Message: {}", send.getMessage());
+        return send;
+    }
 }

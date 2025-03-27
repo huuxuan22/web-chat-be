@@ -10,6 +10,7 @@ import com.example.webchat.repository.IUserRepository;
 import com.example.webchat.service.impl.INotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,5 +67,10 @@ public class NotificationService implements INotificationService {
         chatRepository.deleteChatUserByUserIdAAndChatId(sender,chat.getChatId());
         chatRepository.deleteChatUserByUserIdAAndChatId(receiver,chat.getChatId());
         chatRepository.delete(chat);
+    }
+
+    @Override
+    public void deleteUnreadNotifications(Integer notificationId) {
+        notificationRepo.deleteById(Long.valueOf(notificationId));
     }
 }

@@ -9,4 +9,5 @@ public interface INotificationService {
     void sendNotification(String type, String message, Boolean isRead, Integer sender, Integer receiver);
     List<Notification> findAllByReceiverId(@Param("receiverId") Integer receiverId);
     void deleteNotification(Integer sender, Integer receiver);
+    void deleteUnreadNotifications(Integer notificationId);
 }

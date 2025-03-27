@@ -20,5 +20,5 @@ public class Roles {
     private String roleName;
 
     public static String USER = "USER";
-    public static String ADMIN = "ADMIN";
+    public static String USER_FACEBOOK_GOOGLE = "USER_FACEBOOK_GOOGLE";
 }

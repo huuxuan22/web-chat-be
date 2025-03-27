@@ -4,6 +4,8 @@ import com.example.webchat.model.Chat;
 import com.example.webchat.model.Users;
 import com.example.webchat.request.ChatMessageRequest;
 import com.example.webchat.request.GroupChatReques;
+import com.example.webchat.request.SearchUser;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -18,5 +20,11 @@ public interface IChatService {
     void deleteChat(Integer chatId, Users userRed);
     List<ChatMessageRequest> getAllChatMessages(Integer userId,String name);
     Chat findByDoubleUserId(Integer userId1,Integer userId2);
+    void acceptAddFriend(Integer senderId, Integer receiverId);
+    int updateChatNameByChatId( Integer chatId, String chatName);
+    int updateAvatarChat ( Integer chatId, String avatarUrl);
+    List<SearchUser> userListInChat(@Param("chatId") Integer chatId);
+    boolean findChatByChatName(String chatName);
+    List<Users> findAllUsers(Integer chatId);
 }
 

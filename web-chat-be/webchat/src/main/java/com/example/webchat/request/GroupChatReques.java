@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 public class GroupChatReques {
     private List<Integer> userIds; // danh sach nguoi tham gia nhom chat
-    private String chatName;
+    private String groupName;
     private String chatImage;
 
 }

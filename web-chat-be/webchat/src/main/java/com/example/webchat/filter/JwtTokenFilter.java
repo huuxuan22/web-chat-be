@@ -2,6 +2,7 @@ package com.example.webchat.filter;
 
 import com.example.webchat.component.JwtTokenUtils;
 import com.example.webchat.model.Users;
+import com.example.webchat.service.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -29,13 +30,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtTokenUtils jwtTokenUtils;
     private final ServletContext servletContext;
+    private final RedisService redisService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        try {            if (isByPassToken(request)) {
+        try {
+            if (isByPassToken(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -48,7 +51,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             final String token = authenticate.substring(7); // lay doan ma token tu chi so 7 den het chuoi
             final String username = jwtTokenUtils.extractUserName(token);
-
+            List<String> tokenList = redisService.getTokenList(username);
+            for (String tokenLogout : tokenList ) {
+                if (tokenLogout.equals(token)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("Token này đã bị chặn. Vui lòng đăng nhập lại.");
+                    return;
+                }
+            }
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 Users userDetials = (Users) userDetailsService.loadUserByUsername(username);
                 if (jwtTokenUtils.validateToken(token, (UserDetails) userDetials)) {
@@ -78,10 +88,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         final List<org.modelmapper.internal.Pair<String, String >> bypassTokens = Arrays.asList(
                 org.modelmapper.internal.Pair.of("/api/user/register","POST"),
+                org.modelmapper.internal.Pair.of("/api/user/image","GET"),
                 org.modelmapper.internal.Pair.of("/api/login","POST"),
                 org.modelmapper.internal.Pair.of("/ws","GET"),
                 org.modelmapper.internal.Pair.of("/ws/","GET"),
-                org.modelmapper.internal.Pair.of("/ws/**","GET")
+                org.modelmapper.internal.Pair.of("/ws/**","GET"),
+                org.modelmapper.internal.Pair.of("/api/user/login-google-facebook","POST")
         );
 
         for (Pair<String, String > token : bypassTokens) {

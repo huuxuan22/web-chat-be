@@ -20,7 +20,6 @@ public class SendMessDTO implements Validator {
 
     @NotNull(message = "Chat ID không được để trống")
     @Min(value = 1, message = "Chat ID phải lớn hơn 0")
-
     private Integer chatId;
 
     @NotBlank(message = "Nội dung tin nhắn không được để trống")

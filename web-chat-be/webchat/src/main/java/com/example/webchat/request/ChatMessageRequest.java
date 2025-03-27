@@ -1,6 +1,7 @@
 package com.example.webchat.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.JoinColumn;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -27,4 +28,8 @@ public class ChatMessageRequest {
     private Integer senderId;
     @JsonProperty(namespace = "sender_name")
     private String senderName;
+    @JsonProperty(namespace = "create_by")
+    private Integer createBy;
+    @JoinColumn(name = "chat_image")
+    private String chatImage;
 }

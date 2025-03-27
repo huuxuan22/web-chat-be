@@ -2,15 +2,19 @@ package com.example.webchat.service;
 
 import com.example.webchat.dto.SendMessDTO;
 import com.example.webchat.exception.DataNotFoundException;
+import com.example.webchat.model.Chat;
 import com.example.webchat.model.Message;
 import com.example.webchat.repository.IChatRepository;
 import com.example.webchat.repository.IMessageRepository;
 import com.example.webchat.repository.IUserRepository;
+import com.example.webchat.repository.MessageProjection;
 import com.example.webchat.request.ListMessageRequest;
 import com.example.webchat.service.impl.IMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -41,8 +45,12 @@ public class MessageService implements IMessageService {
     }
 
     @Override
-    public List<Message> getChatMessages(Integer chatId) {
-        return messageRepository.findAllById(chatId);
+    public Page<MessageProjection> getChatMessages(Integer chatId, Pageable pageable) {
+        Chat chat = chatRepository.findById(chatId).orElse(null);
+        if (chat == null) {
+            return Page.empty(); // Trả về page rỗng nếu không tìm thấy chat
+        }
+        return messageRepository.findAllByChatId(chatId,pageable);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.webchat.repository;
 
 import com.example.webchat.model.Users;
+import com.example.webchat.request.OpptionUsers;
 import com.example.webchat.respone.UserAddFiend;
 import org.hibernate.Internal;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,9 @@ public interface IUserRepository extends JpaRepository<Users, Integer> {
 
     @Query("select u from Users  u where u.fullName = :fullname")
     Optional<Users> findByFullname(@Param("fullname") String fullname);
+
+    @Query("select u from Users  u where u.fullName = :fullname and u.role.roleId = 2")
+    Optional<Users> findByFullnameGoogleFaceBook(@Param("fullname") String fullname);
 
     @Query("select u from Users  u where u.fullName like concat('%',:fullName,'%')")
     List<Users> searchByFullname(@Param("fullName") String fullname);
@@ -61,5 +66,24 @@ public interface IUserRepository extends JpaRepository<Users, Integer> {
     @Query(value = "insert into chat_users  (chat_chat_id,users_user_id)" +
             "values (:chatId,:userId)", nativeQuery = true)
     void insertToChatUsers(@Param("userId") Integer userId, @Param("chatId") Integer chatId);
+
+    @Query(value = "select u.user_id, u.full_name, u.thubnail from chat as c \n" +
+            "inner join chat_users as cu on c.chat_id = cu.chat_chat_id\n" +
+            "inner join users as u on cu.users_user_id = u.user_id" +
+            " where cu.chat_chat_id = :chatId and c.is_group = 2 and u.user_id != :userIdOpponent;",nativeQuery = true)
+    OpptionUsers getOpponentName(@Param("chatId") Integer chatId,
+                             @Param("userIdOpponent") Integer userIdOpponent);
+    @Modifying
+    @Transactional
+    @Query(value = "update users as u set u.password = :password, " +
+            " u.full_name = :fullName where u.user_id = :userId",nativeQuery = true)
+    void updateUser(@Param("fullName") String fullName,
+                     @Param("password") String password,
+                     @Param("userId") Integer userId);
+
+    @Query(value = "select * from users as u \n" +
+            "inner join chat_users as cu on u.user_id = cu.users_user_id\n" +
+            "where cu.chat_chat_id = 2",nativeQuery = true)
+    List<Users> findAllByChatId(Integer chatId);
 
 }
